@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0C8739C811C14E46DFBE7EC6 /* Pods_hello_ios_swift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A237CF9253DA46C4AF7104BD /* Pods_hello_ios_swift.framework */; };
-		771862A11E99D93400D200D7 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 771862A01E99D93400D200D7 /* README.md */; };
+		771862A31E99DAA500D200D7 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 771862A21E99DAA500D200D7 /* README.md */; };
 		77B731B81E99CCB60048C491 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77B731B71E99CCB60048C491 /* AppDelegate.swift */; };
 		77B731BA1E99CCB60048C491 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77B731B91E99CCB60048C491 /* ViewController.swift */; };
 		77B731BD1E99CCB60048C491 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77B731BB1E99CCB60048C491 /* Main.storyboard */; };
@@ -19,7 +19,7 @@
 /* Begin PBXFileReference section */
 		1CF82152221BE298F80D4902 /* Pods-hello-ios-swift.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-hello-ios-swift.debug.xcconfig"; path = "Pods/Target Support Files/Pods-hello-ios-swift/Pods-hello-ios-swift.debug.xcconfig"; sourceTree = "<group>"; };
 		2F47F340C8D479912A787523 /* Pods-hello-ios-swift.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-hello-ios-swift.release.xcconfig"; path = "Pods/Target Support Files/Pods-hello-ios-swift/Pods-hello-ios-swift.release.xcconfig"; sourceTree = "<group>"; };
-		771862A01E99D93400D200D7 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		771862A21E99DAA500D200D7 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		77B731B41E99CCB60048C491 /* hello-ios-swift.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "hello-ios-swift.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		77B731B71E99CCB60048C491 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77B731B91E99CCB60048C491 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -77,7 +77,7 @@
 				77B731BE1E99CCB60048C491 /* Assets.xcassets */,
 				77B731C01E99CCB60048C491 /* LaunchScreen.storyboard */,
 				77B731C31E99CCB60048C491 /* Info.plist */,
-				771862A01E99D93400D200D7 /* README.md */,
+				771862A21E99DAA500D200D7 /* README.md */,
 			);
 			path = "hello-ios-swift";
 			sourceTree = "<group>";
@@ -214,7 +214,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				771862A11E99D93400D200D7 /* README.md in Sources */,
+				771862A31E99DAA500D200D7 /* README.md in Sources */,
 				77B731BA1E99CCB60048C491 /* ViewController.swift in Sources */,
 				77B731B81E99CCB60048C491 /* AppDelegate.swift in Sources */,
 			);
