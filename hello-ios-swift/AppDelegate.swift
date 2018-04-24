@@ -14,7 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     // Enter your mobile key here: Account Settings -> Your Projects -> Production/Test -> Mobile key.
-    private let mobileKeyTest = ""
+    private let mobileKey = ""
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         setUpLDClient()
@@ -26,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let userBuilder = LDUserBuilder()
         userBuilder.key = "test@email.com"
 
-        let config = LDConfig(mobileKey: mobileKeyTest)
+        let config = LDConfig(mobileKey: mobileKey)
 
         LDClient.sharedInstance().start(config, with: userBuilder)
     }
