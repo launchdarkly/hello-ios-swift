@@ -1,0 +1,57 @@
+# config file version: 0.0.1
+version: 2
+jobs:
+  build:
+    working_directory: /Users/distiller/launchdarkly/hello-ios-swift/tmp
+    parallelism: 1    # controls the # of containers for the job. In theory, adding another container should halve the number of tests run in each container, but instead appears to run all tests in both containers.
+    shell: /bin/bash --login
+
+    environment:
+      LC_ALL: en_US.UTF-8
+      LANG: en_US.UTF-8
+
+    macos:
+      xcode: '9.4.1'
+
+    steps:
+    - checkout
+
+    - run: 
+        name: Make Output Directory
+        command: mkdir -p /Users/distiller/launchdarkly/hello-ios-swift/tmp/output
+
+    - run:
+        name: Show xcodebuild Version
+        command: xcodebuild -version
+
+    # Restore the dependency cache
+    - restore_cache:
+        keys:
+        - v1-dep-{{ .Branch }}-    # This branch if available
+        - v1-dep-master-           # Default branch if not
+
+    - run:
+        name: Check Gemfile Dependencies
+        command: 'bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3'
+
+    - run: 
+        name: Show CocoaPods Version
+        command: bundle exec pod --version
+
+    # Save dependency cache
+    - save_cache:
+        key: v1-dep-{{ .Branch }}-{{ epoch }}
+        paths:
+          - vendor/bundle
+
+    - run:
+        name: Clean & Build
+        command: set -o pipefail && xcodebuild clean build -workspace 'hello-ios-swift.xcworkspace' -scheme 'hello-ios-swift' CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= PROVISIONING_PROFILE= | tee 'output/xcode_raw.log'
+
+    - run: 
+        name: Copy XC Activity Log
+        command: find "${HOME}/Library/Developer/Xcode/DerivedData" -name '*.xcactivitylog' -exec cp {} output/xcactivitylog \; || true
+
+    - store_artifacts:
+        path: output
+        destination: artifacts
