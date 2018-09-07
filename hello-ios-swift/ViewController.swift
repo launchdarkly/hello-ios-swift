@@ -13,7 +13,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var featureFlagLabel: UILabel!
 
     // Enter your feature flag name here.
-    fileprivate let featureFlagKey = ""
+    fileprivate let featureFlagKey = "my-flag-key"
 
     override func viewDidLoad() {
         super.viewDidLoad()

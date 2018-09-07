@@ -1,3 +1,0 @@
-test:
-  override:
-    - echo "No tests are defined for hello-ios-swift."
