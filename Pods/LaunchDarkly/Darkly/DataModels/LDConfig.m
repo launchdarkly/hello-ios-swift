@@ -4,6 +4,9 @@
 
 #import "LDConfig.h"
 #import "LDUtil.h"
+#import "LDClient.h"
+#import "NSString+LaunchDarkly.h"
+#import "NSDictionary+LaunchDarkly.h"
 
 @interface LDConfig()
 @property (nonatomic, copy, nonnull) NSString* mobileKey;
@@ -40,6 +43,35 @@
 - (void)setMobileKey:(NSString *)mobileKey {
     _mobileKey = [mobileKey copy];
     DEBUG_LOG(@"Set LDConfig mobileKey: %@", mobileKey);
+}
+
+- (void)setSecondaryMobileKeys:(NSDictionary<NSString *,NSString *> *)secondaryMobileKeys {
+    if ([secondaryMobileKeys.allKeys containsObject:kLDPrimaryEnvironmentName]) {
+        NSException *invalidConfigException =
+            [NSException exceptionWithName:NSInvalidArgumentException reason:@"Illegal LDConfig secondaryMobileKeys: May not contain the primary environment name." userInfo:nil];
+        @throw invalidConfigException;
+    }
+    if ([secondaryMobileKeys.allValues containsObject:self.mobileKey]) {
+        NSException *invalidConfigException =
+            [NSException exceptionWithName:NSInvalidArgumentException reason:@"Illegal LDConfig secondaryMobileKeys: May not contain the primary mobile key." userInfo:nil];
+        @throw invalidConfigException;
+    }
+    if ([NSSet setWithArray:secondaryMobileKeys.allValues].count != secondaryMobileKeys.allValues.count) {
+        NSException *invalidConfigException =
+            [NSException exceptionWithName:NSInvalidArgumentException reason:@"Illegal LDConfig secondaryMobileKeys: mobile keys must all be unique" userInfo:nil];
+        @throw invalidConfigException;
+    }
+    if ([secondaryMobileKeys.allKeys containsObject:@""]) {
+        NSException *invalidConfigException =
+        [NSException exceptionWithName:NSInvalidArgumentException reason:@"Illegal LDConfig secondaryMobileKeys: May not contain an empty environment name." userInfo:nil];
+        @throw invalidConfigException;
+    }
+    if ([secondaryMobileKeys.allValues containsObject:@""]) {
+        NSException *invalidConfigException =
+        [NSException exceptionWithName:NSInvalidArgumentException reason:@"Illegal LDConfig secondaryMobileKeys: May not contain an empty mobile key." userInfo:nil];
+        @throw invalidConfigException;
+    }
+    _secondaryMobileKeys = secondaryMobileKeys;
 }
 
 - (void)setBaseUrl:(NSString *)baseUrl {
@@ -136,6 +168,41 @@
     return [self.flagRetryStatusCodes containsObject:@(statusCode)];
 }
 
+-(NSString*)description {
+    NSString *description = [NSString stringWithFormat:@"<LDConfig:%p mobileKey:%@", self, self.mobileKey];
+    description = [NSString stringWithFormat:@"%@ secondaryKeys:%@", description, [self secondaryMobileKeysDescription]];
+    description = [NSString stringWithFormat:@"%@ baseUrl:%@", description, self.baseUrl];
+    description = [NSString stringWithFormat:@"%@ streamUrl:%@", description, self.streamUrl];
+    description = [NSString stringWithFormat:@"%@ eventsUrl:%@", description, self.eventsUrl];
+    description = [NSString stringWithFormat:@"%@ capacity:%ld connectionTimeout:%ld", description, (long)[self.capacity integerValue], (long)[self.connectionTimeout integerValue]];
+    description = [NSString stringWithFormat:@"%@ capacity:%ld connectionTimeout:%ld", description, (long)[self.capacity integerValue], (long)[self.connectionTimeout integerValue]];
+    description = [NSString stringWithFormat:@"%@ flushInterval:%ld pollingInterval:%ld backgroundFetchInterval:%ld", description,
+                   (long)[self.flushInterval integerValue], (long)[self.pollingInterval integerValue], (long)[self.backgroundFetchInterval integerValue]];
+    description = [NSString stringWithFormat:@"%@ capacity:%ld connectionTimeout:%ld", description, (long)[self.capacity integerValue], (long)[self.connectionTimeout integerValue]];
+    description = [NSString stringWithFormat:@"%@ streaming:%@", description, [NSString stringWithBool:self.streaming]];
+    description = [NSString stringWithFormat:@"%@ privateUserAttributes:%@", description, [self.privateUserAttributes componentsJoinedByString:@","]];
+    description = [NSString stringWithFormat:@"%@ allUserAttributesPrivate:%@", description, [NSString stringWithBool:self.allUserAttributesPrivate]];
+    description = [NSString stringWithFormat:@"%@ useReport:%@", description, [NSString stringWithBool:self.useReport]];
+    description = [NSString stringWithFormat:@"%@ useReport:%@", description, [NSString stringWithBool:self.useReport]];
+    description = [NSString stringWithFormat:@"%@ inlineUserInEvents:%@", description, [NSString stringWithBool:self.inlineUserInEvents]];
+    description = [NSString stringWithFormat:@"%@ debugEnabled:%@", description, [NSString stringWithBool:self.debugEnabled]];
+    description = [NSString stringWithFormat:@"%@>", description];
+    return description;
+}
+
+-(NSString*)secondaryMobileKeysDescription {
+    if (self.secondaryMobileKeys.count == 0) {
+        return @"{}";
+    }
+    NSString *secondaryKeysDescription = @"{";
+    NSString *separator = @"";
+    for (NSString *environmentName in self.secondaryMobileKeys.allKeys) {
+        secondaryKeysDescription = [NSString stringWithFormat:@"%@%@%@:%@", secondaryKeysDescription, separator, environmentName, self.secondaryMobileKeys[environmentName]];
+        separator = @",";
+    }
+    secondaryKeysDescription = [NSString stringWithFormat:@"%@}", secondaryKeysDescription];
+    return secondaryKeysDescription;
+}
 @end
 
 #pragma clang diagnostic push

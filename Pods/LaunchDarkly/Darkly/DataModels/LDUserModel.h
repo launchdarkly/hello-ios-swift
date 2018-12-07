@@ -48,4 +48,6 @@ extern NSString * __nonnull const kUserAttributeCustom;
 
 -(void)resetTracker;
 
+-(LDUserModel*)copy;
+
 @end

@@ -12,6 +12,15 @@
 @property (nonatomic, readonly, nonnull) NSString* mobileKey;
 
 /**
+ These are the names and mobile keys for secondary environments to use in the SDK. The
+ property must specify a 1:1 mapping of environment name to mobile key. Neither
+ kLDPrimaryEnvironmentName nor the value in mobileKey may appear in secondaryMobileKeys.
+ Neither the names nor mobile keys may be empty. If any of these conditions are not met
+ the SDK will throw an NSInvalidArgumentException. Optional. The default is nil.
+ */
+@property (nonatomic, strong, nullable) NSDictionary<NSString*, NSString*> *secondaryMobileKeys;
+
+/**
  The base URL of the LaunchDarkly service, should you need to override
  the default.
  */
@@ -113,7 +122,7 @@
  */
 - (instancetype _Nonnull)initWithMobileKey:(nonnull NSString *)mobileKey NS_DESIGNATED_INITIALIZER;
 - (BOOL)isFlagRetryStatusCode:(NSInteger)statusCode;
-
+-(NSString*)secondaryMobileKeysDescription;
 - (instancetype _Nonnull )init NS_UNAVAILABLE;
 
 @end

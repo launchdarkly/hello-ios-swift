@@ -10,6 +10,7 @@
 #import "LDFlagConfigValue.h"
 #import "LDUtil.h"
 #import "NSMutableDictionary+NullRemovable.h"
+#import "NSDictionary+LaunchDarkly.h"
 
 NSString * const kFeaturesJsonDictionaryKey = @"featuresJsonDictionary";
 NSString * const kLDFlagConfigModelKeyKey = @"key";
@@ -78,7 +79,17 @@ NSString * const kLDFlagConfigModelKeyKey = @"key";
     return [NSDictionary dictionaryWithDictionary:[flagConfigDictionaryValues copy]];
 }
 
--(BOOL)doesFlagConfigValueExistForFlagKey:(NSString*)flagKey {
+-(NSDictionary*)allFlagValues {
+    return [self.featuresJsonDictionary compactMapUsingBlock:^id(id originalValue) {
+        if (originalValue == nil) { return nil; }
+        if (![originalValue isKindOfClass:[LDFlagConfigValue class]]) { return nil; }
+        LDFlagConfigValue *flagConfigValue = originalValue;
+        if (flagConfigValue.value == nil || [flagConfigValue.value isKindOfClass:[NSNull class]]) { return nil; }
+        return flagConfigValue.value;
+    }];
+}
+
+-(BOOL)containsFlagKey:(NSString*)flagKey {
     if (!self.featuresJsonDictionary) { return NO; }
 
     return [[self.featuresJsonDictionary allKeys] containsObject: flagKey];
@@ -131,10 +142,10 @@ NSString * const kLDFlagConfigModelKeyKey = @"key";
     id flagVersionObject = eventDictionary[kLDFlagConfigValueKeyVersion];
     if (!flagVersionObject || ![flagVersionObject isKindOfClass:[NSNumber class]]) { return; }
     NSInteger flagVersion = [(NSNumber*)flagVersionObject integerValue];
-    if ([self doesFlagConfigValueExistForFlagKey:flagKey] && flagVersion <= [self flagModelVersionForFlagKey:flagKey]) { return; }
+    if ([self containsFlagKey:flagKey] && flagVersion <= [self flagModelVersionForFlagKey:flagKey]) { return; }
 
     NSMutableDictionary *updatedFlagConfig = [NSMutableDictionary dictionaryWithDictionary:self.featuresJsonDictionary];
-    updatedFlagConfig[flagKey] = nil;
+    [updatedFlagConfig removeObjectForKey:flagKey];
 
     self.featuresJsonDictionary = [updatedFlagConfig copy];
 }
@@ -143,12 +154,41 @@ NSString * const kLDFlagConfigModelKeyKey = @"key";
     return [self.featuresJsonDictionary isEqualToDictionary:otherConfig.featuresJsonDictionary];
 }
 
+-(NSArray<NSString*>*)differingFlagKeysFromConfig:(nullable LDFlagConfigModel*)otherConfig {
+    NSSet<NSString*> *allKeys = [[NSSet setWithArray:self.featuresJsonDictionary.allKeys] setByAddingObjectsFromArray:otherConfig.featuresJsonDictionary.allKeys];
+    NSMutableArray<NSString*> *differingFlagKeys = [NSMutableArray arrayWithCapacity:allKeys.count];
+    for (NSString *flagKey in allKeys) {
+        if (![self containsFlagKey:flagKey] || ![otherConfig containsFlagKey:flagKey]) {
+            [differingFlagKeys addObject:flagKey];
+            continue;
+        }
+        id value = [self flagValueForFlagKey:flagKey];
+        id otherValue = [otherConfig flagValueForFlagKey:flagKey];
+        if ([value isEqual:otherValue]) {
+            continue;
+        }
+        if (value == nil && otherValue == nil) {
+            continue;
+        }
+        [differingFlagKeys addObject:flagKey];
+    }
+    if (differingFlagKeys.count == 0) {
+        return nil;
+    }
+
+    return [differingFlagKeys copy];
+}
+
 -(BOOL)hasFeaturesEqualToDictionary:(NSDictionary*)otherDictionary {
     NSArray<NSString*> *flagKeys = self.featuresJsonDictionary.allKeys;
-    if (flagKeys.count != otherDictionary.allKeys.count) { return NO; }
+    if (flagKeys.count != otherDictionary.allKeys.count) {
+        return NO;
+    }
     for (NSString *flagKey in flagKeys) {
         LDFlagConfigValue *flagConfigValue = self.featuresJsonDictionary[flagKey];
-        if (!otherDictionary[flagKey] || ![otherDictionary[flagKey] isKindOfClass:[NSDictionary class]]) { return NO; }
+        if (!otherDictionary[flagKey] || ![otherDictionary[flagKey] isKindOfClass:[NSDictionary class]]) {
+            return NO;
+        }
         NSDictionary *otherFlagConfigValueDictionary = otherDictionary[flagKey];
 
         if (![flagConfigValue hasPropertiesMatchingDictionary:otherFlagConfigValueDictionary]) {
@@ -170,6 +210,10 @@ NSString * const kLDFlagConfigModelKeyKey = @"key";
         if (!flagConfigValue) { continue; }
         flagConfigValue.eventTrackingContext = otherFlagConfigValue.eventTrackingContext;
     }
+}
+
+-(LDFlagConfigModel*)copy {
+    return [[LDFlagConfigModel alloc] initWithDictionary:[self dictionaryValueIncludeNulls:YES]];
 }
 
 -(NSString*)description {
