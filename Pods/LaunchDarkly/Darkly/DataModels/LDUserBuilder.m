@@ -4,8 +4,10 @@
 
 
 #import "LDUserBuilder.h"
+#import "LDUserModel.h"
 #import "LDUtil.h"
 #import "LDDataManager.h"
+#import "DarklyConstants.h"
 
 @implementation LDUserBuilder
 
@@ -141,79 +143,40 @@
     }
 }
 
-- (LDUserModel *)build {
-    DEBUG_LOGX(@"LDUserBuilder build method called");
-    LDUserModel *user = nil;
+-(LDUserModel*)build {
+    LDUserModel *user = [[LDUserModel alloc] init];
+    user.key = self.key.length > 0 ? self.key : [LDUserBuilder uniqueKey];
+    user.anonymous = self.key.length > 0 ? self.isAnonymous : YES;
+    user.ip = self.ip;
+    user.country = self.country;
+    user.name = self.name;
+    user.firstName = self.firstName;
+    user.lastName = self.lastName;
+    user.email = self.email;
+    user.avatar = self.avatar;
+    user.custom = self.customDictionary;
+    user.privateAttributes = self.privateAttributes;
 
-    if (self.key) {
-        user = [[LDDataManager sharedManager] findUserWithkey:self.key];
-        if(!user) {
-            user = [[LDUserModel alloc] init];
-        }
-        DEBUG_LOG(@"LDUserBuilder building User with key: %@", self.key);
-        DEBUG_LOG(@"LDUserBuilder building User with anonymous: %d", self.isAnonymous);
-        [user key:self.key];
-        user.anonymous = self.isAnonymous;
-    } else {
-        NSString *uniqueKey;
+    return user;
+}
+
++(NSString*)uniqueKey {
+    NSString *uniqueKey;
 #if TARGET_OS_IOS || TARGET_OS_TV
-        uniqueKey = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    uniqueKey = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
 #else
-        if ([[NSUserDefaults standardUserDefaults] valueForKey:kDeviceIdentifierKey]) {
-            uniqueKey = [[NSUserDefaults standardUserDefaults] valueForKey:kDeviceIdentifierKey];
-        }
-        else{
-            uniqueKey = [[NSUUID UUID] UUIDString];
-            [[NSUserDefaults standardUserDefaults] setValue:uniqueKey forKey:kDeviceIdentifierKey];
-            [[NSUserDefaults standardUserDefaults] synchronize];
-        }
+    if ([[NSUserDefaults standardUserDefaults] valueForKey:kDeviceIdentifierKey]) {
+        uniqueKey = [[NSUserDefaults standardUserDefaults] valueForKey:kDeviceIdentifierKey];
+    }
+    else{
+        uniqueKey = [[NSUUID UUID] UUIDString];
+        [[NSUserDefaults standardUserDefaults] setValue:uniqueKey forKey:kDeviceIdentifierKey];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
 
 #endif
-        DEBUG_LOG(@"LDUserBuilder building User with key: %@", uniqueKey);
 
-        user = [[LDUserModel alloc] init];
-        [user key:uniqueKey];
-        user.anonymous = YES;
-    }
-    if (self.ip) {
-        DEBUG_LOG(@"LDUserBuilder building User with ip: %@", self.ip);
-        user.ip = self.ip;
-    }
-    if (self.country) {
-        DEBUG_LOG(@"LDUserBuilder building User with country: %@", self.country);
-        user.country = self.country;
-    }
-    if (self.name) {
-        DEBUG_LOG(@"LDUserBuilder building User with name: %@", self.name);
-        user.name = self.name;
-    }
-    if (self.firstName) {
-        DEBUG_LOG(@"LDUserBuilder building User with firstName: %@", self.firstName);
-        user.firstName = self.firstName;
-    }
-    if (self.lastName) {
-        DEBUG_LOG(@"LDUserBuilder building User with lastName: %@", self.lastName);
-        user.lastName = self.lastName;
-    }
-    if (self.email) {
-        DEBUG_LOG(@"LDUserBuilder building User with email: %@", self.email);
-        user.email = self.email;
-    }
-    if (self.avatar) {
-        DEBUG_LOG(@"LDUserBuilder building User with avatar: %@", self.avatar);
-        user.avatar = self.avatar;
-    }
-    if (self.customDictionary && self.customDictionary.count) {
-        DEBUG_LOG(@"LDUserBuilder building User with custom: %@", self.customDictionary);
-        user.custom = self.customDictionary;
-    }
-    if (self.privateAttributes) {
-        DEBUG_LOG(@"LDUserBuilder building User with private attributes: %@", [self.privateAttributes description]);
-        user.privateAttributes = self.privateAttributes;
-    }
-
-    [[LDDataManager sharedManager] saveUser:user];
-    return user;
+    return uniqueKey;
 }
 
 - (LDUserBuilder *)withKey:(NSString *)inputKey

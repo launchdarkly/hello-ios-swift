@@ -2,8 +2,8 @@
 //  Copyright © 2015 Catamorphic Co. All rights reserved.
 //
 
-
-#import "LDUserModel.h"
+@import Foundation;
+@class LDUserModel;
 
 @interface LDUserBuilder : NSObject
 
@@ -109,9 +109,7 @@
 
 -(nonnull LDUserModel *)build;
 
-+ (nonnull LDUserModel *)compareNewBuilder:(nonnull LDUserBuilder *)iBuilder withUser:(nonnull LDUserModel *)iUser;
 + (nonnull LDUserBuilder *)currentBuilder:(nonnull LDUserModel *)iUser;
-
 + (nonnull LDUserBuilder *)retrieveCurrentBuilder:(nonnull LDUserModel *)iUser __deprecated_msg("Use `currentBuilder:` instead");
 
 /**
