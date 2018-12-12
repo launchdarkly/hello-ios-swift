@@ -23,11 +23,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     private func setUpLDClient() {
-        let userBuilder = LDUserBuilder()
-        userBuilder.key = "test@email.com"
+        let user = LDUser(key: "test@email.com")
 
-        let config = LDConfig(mobileKey: mobileKey)
+        let config = LDConfig()
 
-        LDClient.sharedInstance().start(config, with: userBuilder)
+        LDClient.shared.start(mobileKey: mobileKey, config: config, user: user)
     }
 }

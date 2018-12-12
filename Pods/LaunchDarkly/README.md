@@ -27,7 +27,7 @@ source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '8.0'
 
 target 'TargetName' do
-pod 'LaunchDarkly'
+pod 'LaunchDarkly', '3.0.0-beta.1'
 end
 ```
 
@@ -51,30 +51,33 @@ $ brew install carthage
 To integrate LaunchDarkly into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "launchdarkly/ios-client" "2.14.0"
+github "launchdarkly/ios-client" "v3-beta"
 ```
 
-Run `carthage` to build the framework and drag the built `Darkly.framework` into your Xcode project.
+Run `carthage update` to build the framework and drag the built `LaunchDarkly.framework` for your platform into your Xcode project.
 
 Quick setup
 -----------
 
 1. Add the SDK to your `Podfile`:
 
-        pod 'LaunchDarkly', '2.14.0'
+        pod 'LaunchDarkly', '3.0.0-beta.1'
 
 2. Import the LaunchDarkly client:
 
-        #import "Darkly.h"
+        @import LaunchDarkly;
+        
+    -- or --
+    
+        import LaunchDarkly
 
 3. Instantiate a new LDClient with your mobile key and user:
 
-        LDConfig *config = [[LDConfig alloc] initWithMobileKey: @"YOUR_MOBILE_KEY"];
+        let config = LDConfig()
 
-        LDUserBuilder *user = [[LDUserBuilder alloc] init];
-        user.key = @"aa0ceb";
+        let user = LDUser(key: "aa0ceb")
 
-        [[LDClient sharedInstance] start:config withUserBuilder:user];
+        LDClient.shared.start(mobileKey: my-mobile-key, config: config, user: user)
 
 (Be sure to use a mobile key from your environments. Never embed a standard SDK key into a mobile application.)
 
@@ -85,11 +88,11 @@ Your first feature flag
 
 2. In your application code, use the feature’s key to check whether the flag is on for each user:
 
-        BOOL showFeature = [[LDClient sharedInstance] boolVariation:@"YOUR_FLAG_KEY" fallback:NO];
-        if (showFeature) {
-                NSLog(@"Showing feature for %@", user.key);
+        let showFeature = LDClient.shared.variation(forKey:your-flag-key, fallback: false)
+        if showFeature {
+            print("Showing feature for /(user.key)")
         } else {
-                NSLog(@"Not showing feature for user %@", user.key);
+            print("Not showing feature for /(user.key)")
         }
 
 Manage the feature on your dashboard — control who sees the feature without re-deploying your application!

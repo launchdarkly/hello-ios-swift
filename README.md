@@ -8,7 +8,7 @@ Below, you'll find the basic build procedure, but for more comprehensive instruc
 1. Make sure you have [XCode](https://itunes.apple.com/us/app/xcode/id497799835?ls=1&mt=12) installed
 2. Run 'pod install' to get the latest iOS client integrated.
 3. Open `hello-ios.xcworkspace` in XCode
-4. Copy the mobile key from your account settings page and set `mobileKeyTest` in `AppDelegate.swift`.
+4. Copy the mobile key from your account settings page and set `mobileKey` in `AppDelegate.swift`.
 5. Copy the feature flag key from your LaunchDarkly dashboard and set `featureFlagKey` in `ViewController.swift`
 
 6. Run your application through XCode.

@@ -18,22 +18,22 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        LDClient.sharedInstance().delegate = self
+        LDClient.shared.observe(key: featureFlagKey, owner: self) { [weak self] (changedFlag) in
+            self?.featureFlagDidUpdate(changedFlag.key)
+        }
         checkFeatureValue()
     }
 
     fileprivate func checkFeatureValue() {
-        let featureFlagValue = LDClient.sharedInstance().boolVariation(featureFlagKey, fallback: false)
+        let featureFlagValue = LDClient.shared.variation(forKey: featureFlagKey, fallback: false)
         updateLabel(value: featureFlagValue)
     }
 
     fileprivate func updateLabel(value: Bool) {
         featureFlagLabel.text = "\(featureFlagKey): \(value)"
     }
-}
 
-extension ViewController: ClientDelegate {
-    func featureFlagDidUpdate(_ key: String!) {
+    func featureFlagDidUpdate(_ key: LDFlagKey) {
         if key == featureFlagKey {
             checkFeatureValue()
         }
