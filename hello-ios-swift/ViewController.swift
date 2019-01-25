@@ -33,7 +33,7 @@ class ViewController: UIViewController {
 }
 
 extension ViewController: ClientDelegate {
-    func featureFlagDidUpdate(_ key: String!) {
+    func featureFlagDidUpdate(_ key: String) {
         if key == featureFlagKey {
             checkFeatureValue()
         }
