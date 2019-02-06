@@ -25,8 +25,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func setUpLDClient() {
         let user = LDUser(key: "test@email.com")
 
-        let config = LDConfig()
+        var config = LDConfig(mobileKey: mobileKey)
+//        config.streamingMode = .polling
+//        config.flagPollingInterval = 30.0
+        config.eventFlushInterval = 30.0
 
-        LDClient.shared.start(mobileKey: mobileKey, config: config, user: user)
+        LDClient.shared.start(config: config, user: user)
     }
 }
