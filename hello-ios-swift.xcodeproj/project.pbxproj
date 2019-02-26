@@ -100,7 +100,6 @@
 				77B731B11E99CCB60048C491 /* Frameworks */,
 				77B731B21E99CCB60048C491 /* Resources */,
 				C89B5F3EB90A623C6EC41327 /* [CP] Embed Pods Frameworks */,
-				F980D88DDC994E169E5E1F21 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -184,7 +183,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-hello-ios-swift/Pods-hello-ios-swift-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-hello-ios-swift/Pods-hello-ios-swift-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/DarklyEventSource/DarklyEventSource.framework",
 				"${BUILT_PRODUCTS_DIR}/LaunchDarkly/LaunchDarkly.framework",
 			);
@@ -195,22 +194,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-hello-ios-swift/Pods-hello-ios-swift-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		F980D88DDC994E169E5E1F21 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-hello-ios-swift/Pods-hello-ios-swift-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-hello-ios-swift/Pods-hello-ios-swift-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
