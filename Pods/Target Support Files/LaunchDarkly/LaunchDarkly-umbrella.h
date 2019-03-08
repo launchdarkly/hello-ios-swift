@@ -10,7 +10,7 @@
 #endif
 #endif
 
-#import "Darkly.h"
+#import "LaunchDarkly.h"
 
 FOUNDATION_EXPORT double LaunchDarklyVersionNumber;
 FOUNDATION_EXPORT const unsigned char LaunchDarklyVersionString[];
