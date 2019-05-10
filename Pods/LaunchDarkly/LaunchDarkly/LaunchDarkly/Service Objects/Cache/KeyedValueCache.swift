@@ -8,7 +8,7 @@
 
 import Foundation
 
-//sourcery: AutoMockable
+//sourcery: autoMockable
 protocol KeyedValueCaching {
     func set(_ value: Any?, forKey: String)
     //sourcery: DefaultReturnValue = nil
