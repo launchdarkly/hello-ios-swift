@@ -11,7 +11,7 @@ jobs:
       LANG: en_US.UTF-8
 
     macos:
-      xcode: '10.1.0'
+      xcode: '10.2.0'
 
     steps:
     - checkout
@@ -46,7 +46,7 @@ jobs:
 
     - run:
         name: Clean & Build
-        command: set -o pipefail && xcodebuild clean build -workspace 'hello-ios-swift.xcworkspace' -scheme 'hello-ios-swift' CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= PROVISIONING_PROFILE= | tee 'output/xcode_raw.log'
+        command: set -o pipefail && xcodebuild clean build -workspace 'hello-ios-swift.xcworkspace' -scheme 'hello-ios-swift' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY= PROVISIONING_PROFILE= | tee 'output/xcode_raw.log'
 
     - run: 
         name: Copy XC Activity Log
