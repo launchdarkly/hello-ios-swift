@@ -2,7 +2,6 @@
 //  EnvironmentReporter.swift
 //  LaunchDarkly
 //
-//  Created by Mark Pokorny on 3/27/18. +JMJ
 //  Copyright © 2018 Catamorphic Co. All rights reserved.
 //
 
@@ -44,6 +43,8 @@ enum OperatingSystem: String {
 protocol EnvironmentReporting {
     //sourcery: defaultMockValue = true
     var isDebugBuild: Bool { get }
+    //sourcery: defaultMockValue = Constants.deviceType
+    var deviceType: String { get }
     //sourcery: defaultMockValue = Constants.deviceModel
     var deviceModel: String { get }
     //sourcery: defaultMockValue = Constants.systemVersion
@@ -52,9 +53,9 @@ protocol EnvironmentReporting {
     var systemName: String { get }
     //sourcery: defaultMockValue = .iOS
     var operatingSystem: OperatingSystem { get }
-    // the code generator is not generating the default, not sure why not //sourcery: defaultMockValue = .UIApplicationDidEnterBackground
+    //sourcery: defaultMockValue = EnvironmentReporter().backgroundNotification
     var backgroundNotification: Notification.Name? { get }
-    // the code generator is not generating the default, not sure why not //sourcery: defaultMockValue = .UIApplicationWillEnterForeground
+    //sourcery: defaultMockValue = EnvironmentReporter().foregroundNotification
     var foregroundNotification: Notification.Name? { get }
     //sourcery: defaultMockValue = Constants.vendorUUID
     var vendorUUID: String? { get }
@@ -134,9 +135,11 @@ struct EnvironmentReporter: EnvironmentReporting {
     var shouldThrottleOnlineCalls: Bool { true }
     #endif
 
-    var sdkVersion: String {
-        Bundle(for: LDClient.self).infoDictionary?["CFBundleShortVersionString"] as? String ?? "4.x"
-    }
+    let sdkVersion = "5.0.1"
+    // Unfortunately, the following does not function in certain configurations, such as when included through SPM
+//    var sdkVersion: String {
+//        Bundle(for: LDClient.self).infoDictionary?["CFBundleShortVersionString"] as? String ?? "5.x"
+//    }
 }
 
 #if os(OSX)

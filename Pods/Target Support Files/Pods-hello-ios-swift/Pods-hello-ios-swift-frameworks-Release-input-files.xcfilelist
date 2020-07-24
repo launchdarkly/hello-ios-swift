@@ -1,0 +1,3 @@
+${PODS_ROOT}/Target Support Files/Pods-hello-ios-swift/Pods-hello-ios-swift-frameworks.sh
+${BUILT_PRODUCTS_DIR}/LDSwiftEventSource/LDSwiftEventSource.framework
+${BUILT_PRODUCTS_DIR}/LaunchDarkly/LaunchDarkly.framework

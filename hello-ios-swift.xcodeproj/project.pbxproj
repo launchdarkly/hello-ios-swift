@@ -184,12 +184,12 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-hello-ios-swift/Pods-hello-ios-swift-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/DarklyEventSource/DarklyEventSource.framework",
+				"${BUILT_PRODUCTS_DIR}/LDSwiftEventSource/LDSwiftEventSource.framework",
 				"${BUILT_PRODUCTS_DIR}/LaunchDarkly/LaunchDarkly.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DarklyEventSource.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/LDSwiftEventSource.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/LaunchDarkly.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;

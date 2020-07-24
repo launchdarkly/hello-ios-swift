@@ -30,6 +30,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        config.flagPollingInterval = 30.0
         config.eventFlushInterval = 30.0
 
-        LDClient.shared.start(config: config, user: user)
+        LDClient.start(config: config, user: user)
     }
 }

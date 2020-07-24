@@ -18,14 +18,14 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        LDClient.shared.observe(key: featureFlagKey, owner: self) { [weak self] (changedFlag) in
+        LDClient.get()?.observe(key: featureFlagKey, owner: self) { [weak self] changedFlag in
             self?.featureFlagDidUpdate(changedFlag.key)
         }
         checkFeatureValue()
     }
 
     fileprivate func checkFeatureValue() {
-        let featureFlagValue = LDClient.shared.variation(forKey: featureFlagKey, fallback: false)
+        let featureFlagValue = LDClient.get()!.variation(forKey: featureFlagKey, defaultValue: false)
         updateLabel(value: featureFlagValue)
     }
 
