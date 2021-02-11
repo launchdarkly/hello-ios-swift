@@ -8,65 +8,77 @@ import FoundationNetworking
 import os.log
 #endif
 
+/**
+ Provides an EventSource client for consuming Server-Sent Events.
+
+ See the [Server-Sent Events spec](https://html.spec.whatwg.org/multipage/server-sent-events.html) for more details.
+ */
 public class EventSource {
     private let esDelegate: EventSourceDelegate
 
     /**
-     Initialize an EventSource with the given configuration.
+     Initialize the `EventSource` client with the given configuration.
 
-     - Parameter config: The configuration for initializing the EventSource.
+     - Parameter config: The configuration for initializing the `EventSource` client.
      */
     public init(config: Config) {
         esDelegate = EventSourceDelegate(config: config)
     }
 
     /**
-     Start the EventSource object.
+     Start the `EventSource` client.
 
-     This will create a stream connection to the configured URL. The application will be informed of received events
-     and state changes using the configured EventHandler.
+     This will initiate a streaming connection to the configured URL. The application will be informed of received
+     events and state changes using the configured `EventHandler`.
      */
     public func start() {
         esDelegate.start()
     }
 
-    /// Shuts down the EventSource object. It is not valid to restart the EventSource after calling this function.
+    /// Shuts down the `EventSource` client. It is not valid to restart the client after calling this function.
     public func stop() {
         esDelegate.stop()
     }
 
-    /**
-     Get the most recently received event ID, or the configured `lastEventId` if no event IDs have been received.
-     */
+    /// Get the most recently received event ID, or the value of `EventSource.Config.lastEventId` if no event IDs have
+    /// been received.
     public func getLastEventId() -> String? { esDelegate.getLastEventId() }
 
-    /// Struct describing the configuration of the EventSource
+    /// Struct for configuring the EventSource.
     public struct Config {
+        /// The `EventHandler` called in response to activity on the stream.
         public let handler: EventHandler
+        /// The `URL` of the request used when connecting to the EventSource API.
         public let url: URL
 
-        /// The method to use for the EventSource connection
+        /// The HTTP method to use for the API request.
         public var method: String = "GET"
-        /// Optional body to be sent with the initial request
-        public var body: Data? = nil
-        /// Error handler that can determine whether to proceed or shutdown.
-        public var connectionErrorHandler: ConnectionErrorHandler = { _ in .proceed }
-        /// An initial value for the last-event-id to be set on the initial request
-        public var lastEventId: String? = nil
-        /// Additional headers to be set on the request
+        /// Optional HTTP body to be included in the API request.
+        public var body: Data?
+        /// An initial value for the last-event-id header to be sent on the initial request
+        public var lastEventId: String?
+        /// Additional HTTP headers to be set on the request
         public var headers: [String: String] = [:]
+        /// Transform function to allow dynamically configuring the headers on each API request.
+        public var headerTransform: HeaderTransform = { $0 }
         /// The minimum amount of time to wait before reconnecting after a failure
         public var reconnectTime: TimeInterval = 1.0
         /// The maximum amount of time to wait before reconnecting after a failure
         public var maxReconnectTime: TimeInterval = 30.0
-        /// The minimum amount of time for an EventSource connection to remain open before allowing connection
+        /// The minimum amount of time for an `EventSource` connection to remain open before allowing the connection
         /// backoff to reset.
         public var backoffResetThreshold: TimeInterval = 60.0
-        /// The maximum amount of time between receiving any data before considering the connection to have
-        /// timed out.
+        /// The maximum amount of time between receiving any data before considering the connection to have timed out.
         public var idleTimeout: TimeInterval = 300.0
 
-        /// Create a new configuration with an EventHandler and a URL
+        /**
+         An error handler that is called when an error occurs and can shut down the client in response.
+
+         The default error handler will always attempt to reconnect on an error, unless `EventSource.stop()` is called.
+         */
+        public var connectionErrorHandler: ConnectionErrorHandler = { _ in .proceed }
+
+        /// Create a new configuration with an `EventHandler` and a `URL`
         public init(handler: EventHandler, url: URL) {
             self.handler = handler
             self.url = url
@@ -75,7 +87,6 @@ public class EventSource {
 }
 
 class EventSourceDelegate: NSObject, URLSessionDataDelegate {
-
     #if !os(Linux)
     private let logger: OSLog = OSLog(subsystem: "com.launchdarkly.swift-eventsource", category: "LDEventSource")
     #endif
@@ -84,16 +95,24 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
 
     private let delegateQueue: DispatchQueue = DispatchQueue(label: "ESDelegateQueue")
 
-    private var readyState: ReadyState = .raw
+    private var readyState: ReadyState = .raw {
+        didSet {
+            #if !os(Linux)
+            os_log("State: %@ -> %@", log: logger, type: .debug, oldValue.rawValue, readyState.rawValue)
+            #endif
+        }
+    }
 
     private var lastEventId: String?
     private var reconnectTime: TimeInterval
     private var connectedTime: Date?
 
     private var reconnectionAttempts: Int = 0
-    private var errorHandlerAction: ConnectionErrorAction? = nil
+    private var errorHandlerAction: ConnectionErrorAction = .proceed
     private let utf8LineParser: UTF8LineParser = UTF8LineParser()
+    // swiftlint:disable:next implicitly_unwrapped_optional
     private var eventParser: EventParser!
+    private var urlSession: URLSession?
     private var sessionTask: URLSessionDataTask?
 
     init(config: EventSource.Config) {
@@ -107,23 +126,45 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
             guard self.readyState == .raw
             else {
                 #if !os(Linux)
-                os_log("Start method called on this already-started EventSource object. Doing nothing", log: self.logger, type: .info)
+                os_log("start() called on already-started EventSource object. Returning", log: self.logger, type: .info)
                 #endif
                 return
             }
+            self.urlSession = self.createSession()
             self.connect()
         }
     }
 
     func stop() {
+        let previousState = readyState
+        readyState = .shutdown
         sessionTask?.cancel()
-        if readyState == .open {
+        if previousState == .open {
             config.handler.onClosed()
         }
-        readyState = .shutdown
     }
 
     func getLastEventId() -> String? { lastEventId }
+
+    func createSession() -> URLSession {
+        let sessionConfig = URLSessionConfiguration.default
+        sessionConfig.httpAdditionalHeaders = ["Accept": "text/event-stream", "Cache-Control": "no-cache"]
+        sessionConfig.timeoutIntervalForRequest = self.config.idleTimeout
+        return URLSession(configuration: sessionConfig, delegate: self, delegateQueue: nil)
+    }
+
+    func createRequest() -> URLRequest {
+        var urlRequest = URLRequest(url: self.config.url,
+                                    cachePolicy: URLRequest.CachePolicy.reloadIgnoringLocalAndRemoteCacheData,
+                                    timeoutInterval: self.config.idleTimeout)
+        urlRequest.httpMethod = self.config.method
+        urlRequest.httpBody = self.config.body
+        urlRequest.setValue(self.lastEventId, forHTTPHeaderField: "Last-Event-ID")
+        urlRequest.allHTTPHeaderFields = self.config.headerTransform(
+            urlRequest.allHTTPHeaderFields?.merging(self.config.headers) { $1 } ?? self.config.headers
+        )
+        return urlRequest
+    }
 
     private func connect() {
         #if !os(Linux)
@@ -134,23 +175,12 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
             setLastEventId: { eventId in self.lastEventId = eventId }
         )
         self.eventParser = EventParser(handler: self.config.handler, connectionHandler: connectionHandler)
-        let sessionConfig = URLSessionConfiguration.default
-        sessionConfig.httpAdditionalHeaders = ["Accept": "text/event-stream", "Cache-Control": "no-cache"]
-        sessionConfig.timeoutIntervalForRequest = self.config.idleTimeout
-        let session = URLSession.init(configuration: sessionConfig, delegate: self, delegateQueue: nil)
-        var urlRequest = URLRequest(url: self.config.url,
-                                    cachePolicy: URLRequest.CachePolicy.reloadIgnoringLocalAndRemoteCacheData,
-                                    timeoutInterval: self.config.idleTimeout)
-        urlRequest.httpMethod = self.config.method
-        urlRequest.httpBody = self.config.body
-        urlRequest.setValue(self.lastEventId, forHTTPHeaderField: "Last-Event-ID")
-        urlRequest.allHTTPHeaderFields?.merge(self.config.headers, uniquingKeysWith: { $1 })
-        let task = session.dataTask(with: urlRequest)
-        task.resume()
+        let task = urlSession?.dataTask(with: createRequest())
+        task?.resume()
         sessionTask = task
     }
 
-    private func dispatchError(error: Error) -> ConnectionErrorAction {
+    func dispatchError(error: Error) -> ConnectionErrorAction {
         let action: ConnectionErrorAction = config.connectionErrorHandler(error)
         if action != .shutdown {
             config.handler.onError(error: error)
@@ -159,6 +189,9 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
     }
 
     private func afterComplete() {
+        guard readyState != .shutdown
+        else { return }
+
         var nextState: ReadyState = .closed
         let currentState: ReadyState = readyState
         if errorHandlerAction == .shutdown {
@@ -168,9 +201,6 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
             nextState = .shutdown
         }
         readyState = nextState
-        #if !os(Linux)
-        os_log("State: %@ -> %@", log: logger, type: .debug, currentState.rawValue, nextState.rawValue)
-        #endif
 
         if currentState == .open {
             config.handler.onClosed()
@@ -187,9 +217,10 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
         if let connectedTime = connectedTime, Date().timeIntervalSince(connectedTime) >= config.backoffResetThreshold {
             reconnectionAttempts = 0
         }
+        self.connectedTime = nil
 
         let maxSleep = min(config.maxReconnectTime, reconnectTime * pow(2.0, Double(reconnectionAttempts)))
-        let sleep = maxSleep / 2 + Double.random(in: 0...(maxSleep/2))
+        let sleep = maxSleep / 2 + Double.random(in: 0...(maxSleep / 2))
 
         #if !os(Linux)
         os_log("Waiting %.3f seconds before reconnecting...", log: logger, type: .info, sleep)
@@ -198,6 +229,8 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
             self.connect()
         }
     }
+
+    // MARK: URLSession Delegates
 
     // Tells the delegate that the task finished transferring data.
     public func urlSession(_ session: URLSession,
@@ -208,7 +241,7 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
         eventParser.parse(line: "")
 
         if let error = error {
-            if readyState != .shutdown {
+            if readyState != .shutdown && errorHandlerAction != .shutdown {
                 #if !os(Linux)
                 os_log("Connection error: %@", log: logger, type: .info, error.localizedDescription)
                 #endif
@@ -234,6 +267,13 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
         os_log("initial reply received", log: logger, type: .debug)
         #endif
 
+        guard readyState != .shutdown
+        else {
+            completionHandler(.cancel)
+            return
+        }
+
+        // swiftlint:disable:next force_cast
         let httpResponse = response as! HTTPURLResponse
         if (200..<300).contains(httpResponse.statusCode) {
             connectedTime = Date()

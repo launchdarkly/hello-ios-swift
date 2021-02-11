@@ -6,7 +6,7 @@
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-4BC51D.svg?style=flat)](https://swift.org/package-manager/)
 [![Platform](https://img.shields.io/cocoapods/p/LDSwiftEventSource.svg?style=flat)](https://cocoapods.org/pods/LDSwiftEventSource)
 
-LDSwiftEventSource is a cross platform implementation of the [EventSource specification](https://www.w3.org/TR/eventsource/) written in Swift. It was developed for use in the [LaunchDarkly iOS SDK](https://github.com/launchdarkly/ios-client-sdk).
+LDSwiftEventSource is a cross platform implementation of the [EventSource specification](https://www.w3.org/TR/eventsource/) written in Swift. It was developed for use in the [LaunchDarkly iOS SDK](https://github.com/launchdarkly/ios-client-sdk). Generated API docs are available on [GitHub Pages](https://launchdarkly.github.io/swift-eventsource/).
 
 ## Requirements
 - iOS 10.0+ / watchOS 3.0+ / tvOS 10.0+ / macOS 10.12+
@@ -19,7 +19,7 @@ LDSwiftEventSource is a cross platform implementation of the [EventSource specif
 To use the [CocoaPods](https://cocoapods.org) dependency manager to integrate LDSwiftEventSource into your Xcode project, specify it in your `Podfile`:
 
 ```ruby
-pod 'LDSwiftEventSource', '~> 1.0'
+pod 'LDSwiftEventSource', '~> 1.2'
 ```
 
 ### Carthage
@@ -27,12 +27,12 @@ pod 'LDSwiftEventSource', '~> 1.0'
 To use the [Carthage](https://github.com/Carthage/Carthage) dependency manager to integrate LDSwiftEventSource into your Xcode project, specify it in your `Cartfile`:
 
 ```ogdl
-github "LaunchDarkly/swift-eventsource" ~> 1.0
+github "LaunchDarkly/swift-eventsource" ~> 1.2
 ```
 
 ### Swift Package Manager
 
-The [Swift Package Manager](https://swift.org/package-manager/) is a dependency manager integrated into the `swift` compiler and Xcode. Note that the LDSwiftEventSource Swift package provides both a `LDSwiftEventSource` product, which is explicitely dynamic, and a `LDSwiftEventSourceStatic` product which is explicitely static.
+The [Swift Package Manager](https://swift.org/package-manager/) is a dependency manager integrated into the `swift` compiler and Xcode. Note that the LDSwiftEventSource Swift package provides both a `LDSwiftEventSource` product, which is explicitly dynamic, and a `LDSwiftEventSourceStatic` product which is explicitly static.
 
 To integrate LDSwiftEventSource into an Xcode project, go to the project editor, and select `Swift Packages`. From here hit the `+` button and follow the prompts using  `https://github.com/LaunchDarkly/swift-eventsource.git` as the URL.
 
@@ -40,7 +40,7 @@ To include LDSwiftEventSource in a Swift package, simply add it to the dependenc
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/LaunchDarkly/swift-eventsource.git", .upToNextMajor(from: "1.0.0"))
+    .package(url: "https://github.com/LaunchDarkly/swift-eventsource.git", .upToNextMajor(from: "1.2.0"))
 ]
 ```
 
@@ -61,4 +61,3 @@ We encourage pull requests and other contributions from the community. Check out
     * [docs.launchdarkly.com](https://docs.launchdarkly.com/  "LaunchDarkly Documentation") for our documentation and SDK reference guides
     * [apidocs.launchdarkly.com](https://apidocs.launchdarkly.com/  "LaunchDarkly API Documentation") for our API documentation
     * [blog.launchdarkly.com](https://blog.launchdarkly.com/  "LaunchDarkly Blog Documentation") for the latest product updates
-    * [Feature Flagging Guide](https://github.com/launchdarkly/featureflags/  "Feature Flagging Guide") for best practices and strategies
