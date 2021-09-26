@@ -40,7 +40,7 @@ public struct LDUser {
 
     ///Client app defined string that uniquely identifies the user. If the client app does not define a key, the SDK will assign an identifier associated with the anonymous user. The key cannot be made private.
     public var key: String
-    ///The secondary key for the user. See the [documentation](https://docs.launchdarkly.com/home/managing-flags/targeting-users#percentage-rollout-logic) for more information on it's use for percentage rollout bucketing.
+    ///The secondary key for the user. See the [documentation](https://docs.launchdarkly.com/home/flags/targeting-users#percentage-rollouts) for more information on it's use for percentage rollout bucketing.
     public var secondary: String?
     ///Client app defined name for the user. (Default: nil)
     public var name: String?

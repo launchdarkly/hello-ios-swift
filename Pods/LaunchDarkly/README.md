@@ -5,11 +5,11 @@ LaunchDarkly SDK for iOS
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-4BC51D.svg?style=flat)](https://swift.org/package-manager/)
 [![CocoaPods compatible](https://img.shields.io/cocoapods/v/LaunchDarkly.svg)](https://cocoapods.org/pods/LaunchDarkly)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![Platform](https://img.shields.io/cocoapods/p/LaunchDarkly.svg?style=flat)](http://docs.launchdarkly.com/docs/ios-sdk-reference)
+[![Platform](https://img.shields.io/cocoapods/p/LaunchDarkly.svg?style=flat)](https://docs.launchdarkly.com/sdk/client-side/ios)
 
 LaunchDarkly overview
 -------------------------
-[LaunchDarkly](https://www.launchdarkly.com) is a feature management platform that serves over 100 billion feature flags daily to help teams build better software, faster. [Get started](https://docs.launchdarkly.com/docs/getting-started) using LaunchDarkly today!
+[LaunchDarkly](https://www.launchdarkly.com) is a feature management platform that serves over 100 billion feature flags daily to help teams build better software, faster. [Get started](https://docs.launchdarkly.com/home/getting-started) using LaunchDarkly today!
  
 [![Twitter Follow](https://img.shields.io/twitter/follow/launchdarkly.svg?style=social&label=Follow&maxAge=2592000)](https://twitter.com/intent/follow?screen_name=launchdarkly)
 
@@ -37,7 +37,7 @@ And supports the following device platforms:
 Installation
 -----------
 
-LaunchDarkly supports multiple methods for installing the library in a project. Once installed, head over to the [SDK documentation](https://docs.launchdarkly.com/docs/ios-sdk-reference#section-getting-started) for complete instructions on getting started with using the SDK.
+LaunchDarkly supports multiple methods for installing the library in a project. Once installed, head over to the [SDK documentation](https://docs.launchdarkly.com/sdk/client-side/ios#getting-started) for complete instructions on getting started with using the SDK.
 
 ### Swift Package Manager
 
@@ -89,7 +89,7 @@ If you prefer not to use the aforementioned dependency managers, it is possible 
 Learn more
 -----------
  
-Check out our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/docs/ios-sdk-reference).
+Check out our [documentation](https://docs.launchdarkly.com) for in-depth instructions on configuring and using LaunchDarkly. You can also head straight to the [complete reference guide for this SDK](https://docs.launchdarkly.com/sdk/client-side/ios).
  
 Testing
 -------
@@ -109,7 +109,7 @@ About LaunchDarkly
     * Gradually roll out a feature to an increasing percentage of users, and track the effect that the feature has on key metrics (for instance, how likely is a user to complete a purchase if they have feature A versus feature B?).
     * Turn off a feature that you realize is causing performance problems in production, without needing to re-deploy, or even restart the application with a changed configuration file.
     * Grant access to certain features based on user attributes, like payment plan (eg: users on the ‘gold’ plan get access to more features than users in the ‘silver’ plan). Disable parts of your application to facilitate maintenance, without taking everything offline.
-* LaunchDarkly provides feature flag SDKs for a wide variety of languages and technologies. Check out [our documentation](https://docs.launchdarkly.com/docs) for a complete list.
+* LaunchDarkly provides feature flag SDKs for a wide variety of languages and technologies. Read [our documentation](https://docs.launchdarkly.com/sdk) for a complete list.
 * Explore LaunchDarkly
     * [launchdarkly.com](https://www.launchdarkly.com/ "LaunchDarkly Main Website") for more information
     * [docs.launchdarkly.com](https://docs.launchdarkly.com/  "LaunchDarkly Documentation") for our documentation and SDK reference guides
