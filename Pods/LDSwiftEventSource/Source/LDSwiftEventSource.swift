@@ -4,10 +4,6 @@ import Foundation
 import FoundationNetworking
 #endif
 
-#if !os(Linux)
-import os.log
-#endif
-
 /**
  Provides an EventSource client for consuming Server-Sent Events.
 
@@ -71,6 +67,32 @@ public class EventSource {
         /// The maximum amount of time between receiving any data before considering the connection to have timed out.
         public var idleTimeout: TimeInterval = 300.0
 
+        private var _urlSessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default
+        /**
+         The `URLSessionConfiguration` used to create the `URLSession`.
+
+         - Important:
+            Note that this copies the given `URLSessionConfiguration` when set, and returns copies (updated with any
+         overrides specified by other configuration options) when the value is retrieved. This prevents updating the
+         `URLSessionConfiguration` after initializing `EventSource` with the `Config`, and prevents the `EventSource`
+         from updating any properties of the given `URLSessionConfiguration`.
+
+         - Since: 1.3.0
+         */
+        public var urlSessionConfiguration: URLSessionConfiguration {
+            get {
+                // swiftlint:disable:next force_cast
+                let sessionConfig = _urlSessionConfiguration.copy() as! URLSessionConfiguration
+                sessionConfig.httpAdditionalHeaders = ["Accept": "text/event-stream", "Cache-Control": "no-cache"]
+                sessionConfig.timeoutIntervalForRequest = idleTimeout
+                return sessionConfig
+            }
+            set {
+                // swiftlint:disable:next force_cast
+                _urlSessionConfiguration = newValue.copy() as! URLSessionConfiguration
+            }
+        }
+
         /**
          An error handler that is called when an error occurs and can shut down the client in response.
 
@@ -87,19 +109,14 @@ public class EventSource {
 }
 
 class EventSourceDelegate: NSObject, URLSessionDataDelegate {
-    #if !os(Linux)
-    private let logger: OSLog = OSLog(subsystem: "com.launchdarkly.swift-eventsource", category: "LDEventSource")
-    #endif
+    private let delegateQueue: DispatchQueue = DispatchQueue(label: "ESDelegateQueue")
+    private let logger = Logs()
 
     private let config: EventSource.Config
 
-    private let delegateQueue: DispatchQueue = DispatchQueue(label: "ESDelegateQueue")
-
     private var readyState: ReadyState = .raw {
         didSet {
-            #if !os(Linux)
-            os_log("State: %@ -> %@", log: logger, type: .debug, oldValue.rawValue, readyState.rawValue)
-            #endif
+            logger.log(.debug, "State: %@ -> %@", oldValue.rawValue, readyState.rawValue)
         }
     }
 
@@ -122,12 +139,12 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
     }
 
     func start() {
-        delegateQueue.async {
+        delegateQueue.async { [weak self] in
+            guard let self = self
+            else { return }
             guard self.readyState == .raw
             else {
-                #if !os(Linux)
-                os_log("start() called on already-started EventSource object. Returning", log: self.logger, type: .info)
-                #endif
+                self.logger.log(.info, "start() called on already-started EventSource object. Returning")
                 return
             }
             self.urlSession = self.createSession()
@@ -142,15 +159,13 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
         if previousState == .open {
             config.handler.onClosed()
         }
+        urlSession?.invalidateAndCancel()
     }
 
     func getLastEventId() -> String? { lastEventId }
 
     func createSession() -> URLSession {
-        let sessionConfig = URLSessionConfiguration.default
-        sessionConfig.httpAdditionalHeaders = ["Accept": "text/event-stream", "Cache-Control": "no-cache"]
-        sessionConfig.timeoutIntervalForRequest = self.config.idleTimeout
-        return URLSession(configuration: sessionConfig, delegate: self, delegateQueue: nil)
+        URLSession(configuration: config.urlSessionConfiguration, delegate: self, delegateQueue: nil)
     }
 
     func createRequest() -> URLRequest {
@@ -159,7 +174,7 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
                                     timeoutInterval: self.config.idleTimeout)
         urlRequest.httpMethod = self.config.method
         urlRequest.httpBody = self.config.body
-        urlRequest.setValue(self.lastEventId, forHTTPHeaderField: "Last-Event-ID")
+        urlRequest.setValue(self.lastEventId, forHTTPHeaderField: "Last-Event-Id")
         urlRequest.allHTTPHeaderFields = self.config.headerTransform(
             urlRequest.allHTTPHeaderFields?.merging(self.config.headers) { $1 } ?? self.config.headers
         )
@@ -167,12 +182,10 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
     }
 
     private func connect() {
-        #if !os(Linux)
-        os_log("Starting EventSource client", log: logger, type: .info)
-        #endif
+        logger.log(.info, "Starting EventSource client")
         let connectionHandler: ConnectionHandler = (
-            setReconnectionTime: { reconnectionTime in self.reconnectTime = reconnectionTime },
-            setLastEventId: { eventId in self.lastEventId = eventId }
+            setReconnectionTime: { [weak self] reconnectionTime in self?.reconnectTime = reconnectionTime },
+            setLastEventId: { [weak self] eventId in self?.lastEventId = eventId }
         )
         self.eventParser = EventParser(handler: self.config.handler, connectionHandler: connectionHandler)
         let task = urlSession?.dataTask(with: createRequest())
@@ -195,9 +208,7 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
         var nextState: ReadyState = .closed
         let currentState: ReadyState = readyState
         if errorHandlerAction == .shutdown {
-            #if !os(Linux)
-            os_log("Connection has been explicitly shut down by error handler", log: logger, type: .info)
-            #endif
+            logger.log(.info, "Connection has been explicitly shut down by error handler")
             nextState = .shutdown
         }
         readyState = nextState
@@ -222,11 +233,9 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
         let maxSleep = min(config.maxReconnectTime, reconnectTime * pow(2.0, Double(reconnectionAttempts)))
         let sleep = maxSleep / 2 + Double.random(in: 0...(maxSleep / 2))
 
-        #if !os(Linux)
-        os_log("Waiting %.3f seconds before reconnecting...", log: logger, type: .info, sleep)
-        #endif
-        delegateQueue.asyncAfter(deadline: .now() + sleep) {
-            self.connect()
+        logger.log(.info, "Waiting %.3f seconds before reconnecting...", sleep)
+        delegateQueue.asyncAfter(deadline: .now() + sleep) { [weak self] in
+            self?.connect()
         }
     }
 
@@ -236,23 +245,20 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
     public func urlSession(_ session: URLSession,
                            task: URLSessionTask,
                            didCompleteWithError error: Error?) {
-        utf8LineParser.closeAndReset().forEach(eventParser.parse)
-        // Send additional empty line to force a last dispatch
-        eventParser.parse(line: "")
+        utf8LineParser.closeAndReset()
+        eventParser.reset()
 
         if let error = error {
-            if readyState != .shutdown && errorHandlerAction != .shutdown {
-                #if !os(Linux)
-                os_log("Connection error: %@", log: logger, type: .info, error.localizedDescription)
-                #endif
+            // Ignore cancelled error
+            if (error as NSError).code == NSURLErrorCancelled {
+            } else if readyState != .shutdown && errorHandlerAction != .shutdown {
+                logger.log(.info, "Connection error: %@", error.localizedDescription)
                 errorHandlerAction = dispatchError(error: error)
             } else {
                 errorHandlerAction = .shutdown
             }
         } else {
-            #if !os(Linux)
-            os_log("Connection unexpectedly closed.", log: logger, type: .info)
-            #endif
+            logger.log(.info, "Connection unexpectedly closed.")
         }
 
         afterComplete()
@@ -263,9 +269,7 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
                            dataTask: URLSessionDataTask,
                            didReceive response: URLResponse,
                            completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
-        #if !os(Linux)
-        os_log("initial reply received", log: logger, type: .debug)
-        #endif
+        logger.log(.debug, "Initial reply received")
 
         guard readyState != .shutdown
         else {
@@ -281,9 +285,7 @@ class EventSourceDelegate: NSObject, URLSessionDataDelegate {
             config.handler.onOpened()
             completionHandler(.allow)
         } else {
-            #if !os(Linux)
-            os_log("Unsuccessful response: %d", log: logger, type: .info, httpResponse.statusCode)
-            #endif
+            logger.log(.info, "Unsuccessful response: %d", httpResponse.statusCode)
             errorHandlerAction = dispatchError(error: UnsuccessfulResponseError(responseCode: httpResponse.statusCode))
             completionHandler(.cancel)
         }

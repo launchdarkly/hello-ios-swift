@@ -6,11 +6,11 @@
 [![SwiftPM compatible](https://img.shields.io/badge/SwiftPM-compatible-4BC51D.svg?style=flat)](https://swift.org/package-manager/)
 [![Platform](https://img.shields.io/cocoapods/p/LDSwiftEventSource.svg?style=flat)](https://cocoapods.org/pods/LDSwiftEventSource)
 
-LDSwiftEventSource is a cross platform implementation of the [EventSource specification](https://www.w3.org/TR/eventsource/) written in Swift. It was developed for use in the [LaunchDarkly iOS SDK](https://github.com/launchdarkly/ios-client-sdk). Generated API docs are available on [GitHub Pages](https://launchdarkly.github.io/swift-eventsource/).
+LDSwiftEventSource is a cross platform implementation of the [EventSource specification](https://html.spec.whatwg.org/multipage/server-sent-events.html) written in Swift. It was developed for use in the [LaunchDarkly iOS SDK](https://github.com/launchdarkly/ios-client-sdk). Generated API docs are available on [GitHub Pages](https://launchdarkly.github.io/swift-eventsource/).
 
 ## Requirements
 - iOS 10.0+ / watchOS 3.0+ / tvOS 10.0+ / macOS 10.12+
-- Swift 5.0+
+- Swift 5.1+
 
 ## Installation
 
@@ -19,7 +19,7 @@ LDSwiftEventSource is a cross platform implementation of the [EventSource specif
 To use the [CocoaPods](https://cocoapods.org) dependency manager to integrate LDSwiftEventSource into your Xcode project, specify it in your `Podfile`:
 
 ```ruby
-pod 'LDSwiftEventSource', '~> 1.2'
+pod 'LDSwiftEventSource', '~> 1.3'
 ```
 
 ### Carthage
@@ -27,7 +27,7 @@ pod 'LDSwiftEventSource', '~> 1.2'
 To use the [Carthage](https://github.com/Carthage/Carthage) dependency manager to integrate LDSwiftEventSource into your Xcode project, specify it in your `Cartfile`:
 
 ```ogdl
-github "LaunchDarkly/swift-eventsource" ~> 1.2
+github "LaunchDarkly/swift-eventsource" ~> 1.3
 ```
 
 ### Swift Package Manager
@@ -40,13 +40,13 @@ To include LDSwiftEventSource in a Swift package, simply add it to the dependenc
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/LaunchDarkly/swift-eventsource.git", .upToNextMajor(from: "1.2.0"))
+    .package(url: "https://github.com/LaunchDarkly/swift-eventsource.git", .upToNextMajor(from: "1.3.0"))
 ]
 ```
 
 ## Contributing
 
-We encourage pull requests and other contributions from the community. Check out our [contributing guidelines](CONTRIBUTING.md) for instructions on how to contribute to this SDK.
+We encourage pull requests and other contributions from the community. Check out our [contributing guidelines](https://github.com/LaunchDarkly/swift-eventsource/blob/master/CONTRIBUTING.md) for instructions on how to contribute to this SDK.
 
 ## About LaunchDarkly
 

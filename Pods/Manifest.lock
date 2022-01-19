@@ -1,9 +1,9 @@
 PODS:
-  - LaunchDarkly (5.4.2):
-    - LaunchDarkly/Core (= 5.4.2)
-  - LaunchDarkly/Core (5.4.2):
-    - LDSwiftEventSource (= 1.2.1)
-  - LDSwiftEventSource (1.2.1)
+  - LaunchDarkly (5.4.4):
+    - LaunchDarkly/Core (= 5.4.4)
+  - LaunchDarkly/Core (5.4.4):
+    - LDSwiftEventSource (= 1.3.0)
+  - LDSwiftEventSource (1.3.0)
 
 DEPENDENCIES:
   - LaunchDarkly (~> 5.4)
@@ -14,9 +14,9 @@ SPEC REPOS:
     - LDSwiftEventSource
 
 SPEC CHECKSUMS:
-  LaunchDarkly: fcc4da5dd2463b8c3fc5a2a4a5bddaa4de0a468c
-  LDSwiftEventSource: 4f48b8d123032c64073a0fabc2d2ce60da27f820
+  LaunchDarkly: 99e279f0fb6f2c30e2b03ee84aa803eea56c9e7d
+  LDSwiftEventSource: bb05fa7955e1a5b0121c7d733f45d49fd0ef172f
 
 PODFILE CHECKSUM: dc7ef573a78d82482bd20d4b4964adade31d7f0d
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.10.2
