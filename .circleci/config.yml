@@ -1,4 +1,21 @@
 version: 2.1
+
+workflows:
+  version: 2
+  build_all:
+    jobs:
+      - build
+
+  test-daily:
+    triggers:
+    - schedule:
+        cron: "0 6 * * *"
+        filters:
+          branches:
+            only: master
+    jobs:
+    - build
+
 jobs:
   build:
     shell: /bin/bash --login -eo pipefail
@@ -9,7 +26,7 @@ jobs:
     steps:
     - checkout
 
-    - run: 
+    - run:
         name: Make Output Directory
         command: mkdir -p 'artifacts'
 
