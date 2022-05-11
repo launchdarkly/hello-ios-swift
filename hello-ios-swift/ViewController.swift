@@ -25,7 +25,7 @@ class ViewController: UIViewController {
     }
 
     fileprivate func checkFeatureValue() {
-        let featureFlagValue = LDClient.get()!.variation(forKey: featureFlagKey, defaultValue: false)
+        let featureFlagValue = LDClient.get()!.boolVariation(forKey: featureFlagKey, defaultValue: false)
         updateLabel(value: featureFlagValue)
     }
 
