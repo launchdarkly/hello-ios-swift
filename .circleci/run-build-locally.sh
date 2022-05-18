@@ -10,4 +10,4 @@ curl --user ${CIRCLE_TOKEN}: \
      --request POST \
      --form config=@.circleci/config.yml \
      --form notify=false \
-        https://circleci.com/api/v1.1/project/github/launchdarkly/hello-ios-swift/tree/master
+        https://circleci.com/api/v1.1/project/github/launchdarkly/hello-ios-swift/tree/main
