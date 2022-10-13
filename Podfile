@@ -1,7 +1,7 @@
-platform :ios, '10.0'
+platform :ios, '11.0'
 
 use_frameworks!
 
 target 'hello-ios-swift' do
-    pod 'LaunchDarkly', '~> 6.2'
+    pod 'LaunchDarkly', '~> 7.0'
 end
