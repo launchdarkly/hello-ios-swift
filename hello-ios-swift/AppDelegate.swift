@@ -23,13 +23,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     private func setUpLDClient() {
-        let user = LDUser(key: "test@email.com")
+        var contextBuilder = LDContextBuilder(key: "test@email.com")
+        contextBuilder.trySetValue("firstName", .string("Bob"))
+        contextBuilder.trySetValue("lastName", .string("Loblaw"))
+        contextBuilder.trySetValue("groups", .array([.string("beta_testers")]))
+
+        guard case .success(let context) = contextBuilder.build()
+        else { return }
 
         var config = LDConfig(mobileKey: mobileKey)
-//        config.streamingMode = .polling
-//        config.flagPollingInterval = 30.0
         config.eventFlushInterval = 30.0
 
-        LDClient.start(config: config, user: user)
+        LDClient.start(config: config, context: context)
     }
 }
