@@ -75,7 +75,9 @@ public struct LDContext: Encodable, Equatable {
         func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
-            if let privateAttributes = privateAttributes, !privateAttributes.isEmpty {
+            let includePrivateAttributes = encoder.userInfo[UserInfoKeys.includePrivateAttributes] as? Bool ?? false
+
+            if let privateAttributes = privateAttributes, !privateAttributes.isEmpty, includePrivateAttributes {
                 try container.encodeIfPresent(privateAttributes, forKey: .privateAttributes)
             }
 
@@ -687,8 +689,8 @@ public struct LDContextBuilder {
         case ("", _):
             Log.debug(typeName(and: #function) + ": Provided attribute is empty. Ignoring.")
             return false
-        case ("kind", .string(kind)):
-            self.kind(kind)
+        case ("kind", .string(let val)):
+            self.kind(val)
         case ("kind", _):
             return false
         case ("key", .string(let val)):
