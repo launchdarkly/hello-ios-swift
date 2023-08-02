@@ -31,6 +31,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         guard case .success(let context) = contextBuilder.build()
         else { return }
 
+        // If you want to disable the Auto EnvironmentAttributes functionality.
+        // Use AutoEnvAttributes.disabled as the argument to the constructor
         var config = LDConfig(mobileKey: mobileKey, autoEnvAttributes: AutoEnvAttributes.enabled)
         config.eventFlushInterval = 30.0
 
