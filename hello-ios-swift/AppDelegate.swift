@@ -14,7 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     // Enter your mobile key here: Account Settings -> Your Projects -> Production/Test -> Mobile key.
-    private let mobileKey = ""
+    private let mobileKey = "mob-a9c9ebd5-5b37-4b95-a418-c5ee4cd89468"
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         setUpLDClient()
