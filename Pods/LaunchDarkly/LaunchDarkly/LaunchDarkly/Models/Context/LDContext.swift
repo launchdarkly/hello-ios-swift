@@ -31,7 +31,7 @@ public struct LDContext: Encodable, Equatable {
     // Meta attributes
     fileprivate var name: String?
     fileprivate var anonymous: Bool = false
-    internal var privateAttributes: [Reference] = []
+    internal var privateAttributes: Set<Reference> = []
 
     fileprivate var key: String?
     fileprivate var canonicalizedKey: String
@@ -46,7 +46,7 @@ public struct LDContext: Encodable, Equatable {
     }
 
     struct Meta: Codable {
-        var privateAttributes: [Reference]?
+        var privateAttributes: Set<Reference>?
         var redactedAttributes: [String]?
 
         enum CodingKeys: CodingKey {
@@ -58,7 +58,7 @@ public struct LDContext: Encodable, Equatable {
             && (redactedAttributes?.isEmpty ?? true)
         }
 
-        init(privateAttributes: [Reference]?, redactedAttributes: [String]?) {
+        init(privateAttributes: Set<Reference>?, redactedAttributes: [String]?) {
             self.privateAttributes = privateAttributes
             self.redactedAttributes = redactedAttributes
         }
@@ -66,7 +66,7 @@ public struct LDContext: Encodable, Equatable {
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
 
-            let privateAttributes = try container.decodeIfPresent([Reference].self, forKey: .privateAttributes)
+            let privateAttributes = try container.decodeIfPresent(Set<Reference>.self, forKey: .privateAttributes)
 
             self.privateAttributes = privateAttributes
             self.redactedAttributes = []
@@ -100,7 +100,7 @@ public struct LDContext: Encodable, Equatable {
         }
     }
 
-    static private func encodeSingleContext(container: inout KeyedEncodingContainer<DynamicCodingKeys>, context: LDContext, discardKind: Bool, includePrivateAttributes: Bool, allAttributesPrivate: Bool, globalPrivateAttributes: SharedDictionary<String, PrivateAttributeLookupNode>) throws {
+    static private func encodeSingleContext(container: inout KeyedEncodingContainer<DynamicCodingKeys>, context: LDContext, discardKind: Bool, redactAttributes: Bool, allAttributesPrivate: Bool, globalPrivateAttributes: SharedDictionary<String, PrivateAttributeLookupNode>) throws {
         if !discardKind {
             try container.encodeIfPresent(context.kind.description, forKey: DynamicCodingKeys(string: "kind"))
         }
@@ -121,7 +121,7 @@ public struct LDContext: Encodable, Equatable {
 
                 var path: [String] = []
                 path.reserveCapacity(10)
-                try LDContext.writeFilterAttribute(context: context, container: &container, parentPath: path, key: key, value: value, redactedAttributes: &redactedAttributes, includePrivateAttributes: includePrivateAttributes, globalPrivateAttributes: globalPrivateAttributes)
+                try LDContext.writeFilterAttribute(context: context, container: &container, parentPath: path, key: key, value: value, redactedAttributes: &redactedAttributes, redactAttributes: redactAttributes, globalPrivateAttributes: globalPrivateAttributes)
             }
         }
 
@@ -136,14 +136,14 @@ public struct LDContext: Encodable, Equatable {
         }
     }
 
-    static private func writeFilterAttribute(context: LDContext, container: inout KeyedEncodingContainer<DynamicCodingKeys>, parentPath: [String], key: String, value: LDValue, redactedAttributes: inout [String], includePrivateAttributes: Bool, globalPrivateAttributes: SharedDictionary<String, PrivateAttributeLookupNode>) throws {
+    static private func writeFilterAttribute(context: LDContext, container: inout KeyedEncodingContainer<DynamicCodingKeys>, parentPath: [String], key: String, value: LDValue, redactedAttributes: inout [String], redactAttributes: Bool, globalPrivateAttributes: SharedDictionary<String, PrivateAttributeLookupNode>) throws {
         var path = parentPath
         path.append(key.description)
 
-        let (isReacted, nestedPropertiesAreRedacted) = includePrivateAttributes ? (false, false) : LDContext.maybeRedact(context: context, parentPath: path, value: value, redactedAttributes: &redactedAttributes, globalPrivateAttributes: globalPrivateAttributes)
+        let (isRedacted, nestedPropertiesAreRedacted) = !redactAttributes ? (false, false) : LDContext.maybeRedact(context: context, parentPath: path, value: value, redactedAttributes: &redactedAttributes, globalPrivateAttributes: globalPrivateAttributes)
 
         switch value {
-        case .object where isReacted:
+        case .object where isRedacted:
             break
         case .object(let objectMap):
             if !nestedPropertiesAreRedacted {
@@ -154,9 +154,9 @@ public struct LDContext: Encodable, Equatable {
             // TODO(mmk): This might be a problem. We might write a sub container even if all the attributes are completely filtered out.
             var subContainer = container.nestedContainer(keyedBy: DynamicCodingKeys.self, forKey: DynamicCodingKeys(string: key))
             for (key, value) in objectMap {
-                try writeFilterAttribute(context: context, container: &subContainer, parentPath: path, key: key, value: value, redactedAttributes: &redactedAttributes, includePrivateAttributes: includePrivateAttributes, globalPrivateAttributes: globalPrivateAttributes)
+                try writeFilterAttribute(context: context, container: &subContainer, parentPath: path, key: key, value: value, redactedAttributes: &redactedAttributes, redactAttributes: redactAttributes, globalPrivateAttributes: globalPrivateAttributes)
             }
-        case _ where !isReacted:
+        case _ where !isRedacted:
             try container.encode(value, forKey: DynamicCodingKeys(string: key))
         default:
             break
@@ -230,6 +230,7 @@ public struct LDContext: Encodable, Equatable {
 
     internal struct UserInfoKeys {
         static let includePrivateAttributes = CodingUserInfoKey(rawValue: "LD_includePrivateAttributes")!
+        static let redactAttributes = CodingUserInfoKey(rawValue: "LD_redactAttributes")!
         static let allAttributesPrivate = CodingUserInfoKey(rawValue: "LD_allAttributesPrivate")!
         static let globalPrivateAttributes = CodingUserInfoKey(rawValue: "LD_globalPrivateAttributes")!
     }
@@ -237,12 +238,12 @@ public struct LDContext: Encodable, Equatable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: DynamicCodingKeys.self)
 
-        let includePrivateAttributes = encoder.userInfo[UserInfoKeys.includePrivateAttributes] as? Bool ?? false
         let allAttributesPrivate = encoder.userInfo[UserInfoKeys.allAttributesPrivate] as? Bool ?? false
         let globalPrivateAttributes = encoder.userInfo[UserInfoKeys.globalPrivateAttributes] as? [Reference] ?? []
+        let redactAttributes = encoder.userInfo[UserInfoKeys.redactAttributes] as? Bool ?? true
 
-        let allPrivate = !includePrivateAttributes && allAttributesPrivate
-        let globalPrivate = includePrivateAttributes ? [] : globalPrivateAttributes
+        let allPrivate = redactAttributes && allAttributesPrivate
+        let globalPrivate = redactAttributes ? globalPrivateAttributes : []
         let globalDictionary = LDContext.makePrivateAttributeLookupData(references: globalPrivate)
 
         if isMulti() {
@@ -250,10 +251,10 @@ public struct LDContext: Encodable, Equatable {
 
             for context in contexts {
                 var contextContainer = container.nestedContainer(keyedBy: DynamicCodingKeys.self, forKey: DynamicCodingKeys(string: context.kind.description))
-                try LDContext.encodeSingleContext(container: &contextContainer, context: context, discardKind: true, includePrivateAttributes: includePrivateAttributes, allAttributesPrivate: allPrivate, globalPrivateAttributes: globalDictionary)
+                try LDContext.encodeSingleContext(container: &contextContainer, context: context, discardKind: true, redactAttributes: redactAttributes, allAttributesPrivate: allPrivate, globalPrivateAttributes: globalDictionary)
             }
         } else {
-            try LDContext.encodeSingleContext(container: &container, context: self, discardKind: false, includePrivateAttributes: includePrivateAttributes, allAttributesPrivate: allPrivate, globalPrivateAttributes: globalDictionary)
+            try LDContext.encodeSingleContext(container: &container, context: self, discardKind: false, redactAttributes: redactAttributes, allAttributesPrivate: allPrivate, globalPrivateAttributes: globalDictionary)
         }
     }
 
@@ -333,6 +334,20 @@ public struct LDContext: Encodable, Equatable {
         }
 
         return Util.sha256base64(fullyQualifiedKey()) + "$"
+    }
+
+    func contextHash() -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        encoder.userInfo[UserInfoKeys.redactAttributes] = false
+
+        guard let json = try? encoder.encode(self)
+        else { return fullyQualifiedKey() }
+
+        if let jsonStr = String(data: json, encoding: .utf8) {
+            return Util.sha256base64(jsonStr)
+        }
+        return fullyQualifiedKey()
     }
 
     /// - Returns: true if the `LDContext` is a multi-context; false otherwise.
@@ -593,7 +608,7 @@ public struct LDContextBuilder {
     // Meta attributes
     private var name: String?
     private var anonymous: Bool = false
-    private var privateAttributes: [Reference] = []
+    private var privateAttributes: Set<Reference> = []
 
     private var key: LDContextBuilderKey
     private var attributes: [String: LDValue] = [:]
@@ -782,13 +797,13 @@ public struct LDContextBuilder {
     /// If an attribute's actual name starts with a '/' character, you must use the same escaping syntax as
     /// JSON Pointer: replace "~" with "~0", and "/" with "~1".
     public mutating func addPrivateAttribute(_ reference: Reference) {
-        self.privateAttributes.append(reference)
+        self.privateAttributes.insert(reference)
     }
 
     /// Remove any reference provided through `addPrivateAttribute(_:)`. If the reference was
     /// added more than once, this method will remove all instances of it.
     public mutating func removePrivateAttribute(_ reference: Reference) {
-        self.privateAttributes.removeAll { $0 == reference }
+        self.privateAttributes.remove(reference)
     }
 
     /// Creates a LDContext from the current LDContextBuilder properties.
