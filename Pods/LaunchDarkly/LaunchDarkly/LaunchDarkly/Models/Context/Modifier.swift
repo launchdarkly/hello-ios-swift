@@ -46,10 +46,9 @@ class AutoEnvContextModifier {
 
     private func applicationRecipe() -> ContextRecipe {
         let keyCallable: () -> (String) = {
-            Util.sha256base64(
-                (self.environmentReporter.applicationInfo.applicationId ?? "") + ":" +
-                (self.environmentReporter.applicationInfo.applicationVersion ?? "")
-            )
+            Util.sha256(
+                (self.environmentReporter.applicationInfo.applicationId ?? "")
+            ).base64UrlEncodedString
         }
 
         var callables: [String : () -> LDValue] = [:]
