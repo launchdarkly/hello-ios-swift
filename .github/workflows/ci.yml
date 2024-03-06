@@ -1,0 +1,26 @@
+name: Build
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md' # Do not need to run CI for markdown changes.
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  macos-build:
+    runs-on: macos-13
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # If you only need the current version keep this.
+
+      - uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd
+        with:
+          xcode-version: 15.0.1
+
+      - name: Build hello-ios-swift
+        run: xcodebuild build -workspace 'hello-ios-swift.xcworkspace' -scheme 'hello-ios-swift' CODE_SIGNING_ALLOWED=NO | xcpretty
