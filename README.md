@@ -1,10 +1,12 @@
-### LaunchDarkly Sample iOS Application
- ###
+### LaunchDarkly Sample iOS Application ###
+
+[![Build](https://github.com/launchdarkly/hello-ios-swift/actions/workflows/ci.yml/badge.svg)](https://github.com/launchdarkly/hello-ios-swift/actions/workflows/ci.yml)
+
 We've built a simple Swift application that demonstrates how LaunchDarkly's SDK works. 
 Below, you'll find the basic build procedure, but for more comprehensive instructions, you can visit your [Quickstart page](https://app.launchdarkly.com/quickstart#/).
 
-##### Build instructions
- #####
+##### Build instructions #####
+
 1. Make sure you have [Xcode](https://itunes.apple.com/us/app/xcode/id497799835?ls=1&mt=12) installed
 2. Run 'pod install' to get the latest iOS client integrated.
 3. Open `hello-ios.xcworkspace` in Xcode
