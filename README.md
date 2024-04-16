@@ -1,17 +1,23 @@
-### LaunchDarkly Sample iOS Application ###
+# LaunchDarkly sample iOS application
 
-[![Build](https://github.com/launchdarkly/hello-ios-swift/actions/workflows/ci.yml/badge.svg)](https://github.com/launchdarkly/hello-ios-swift/actions/workflows/ci.yml)
+We've built a simple mobile application that demonstrates how LaunchDarkly's SDK works.
 
-We've built a simple Swift application that demonstrates how LaunchDarkly's SDK works. 
-Below, you'll find the basic build procedure, but for more comprehensive instructions, you can visit your [Quickstart page](https://app.launchdarkly.com/quickstart#/).
+Below, you'll find the build procedure. For more comprehensive instructions, you can visit your [Quickstart page](https://app.launchdarkly.com/quickstart#/) or the [iOS reference guide](https://docs.launchdarkly.com/sdk/client-side/ios).
 
-##### Build instructions #####
+## Build instructions
 
 1. Make sure you have [Xcode](https://itunes.apple.com/us/app/xcode/id497799835?ls=1&mt=12) installed
-2. Run 'pod install' to get the latest iOS client integrated.
-3. Open `hello-ios.xcworkspace` in Xcode
-4. Copy the mobile key from your account settings page and set `mobileKey` in `AppDelegate.swift`.
-5. Copy the feature flag key from your LaunchDarkly dashboard and set `featureFlagKey` in `ViewController.swift`
+1. Run 'pod install' to get the latest iOS client integrated.
+1. Open `hello-ios.xcworkspace` in Xcode
+1. Set the value of `sdkKey` in `AppDelegate.swift` to your LaunchDarkly mobile key. If there is an existing boolean feature flag in your LaunchDarkly project that you want to evaluate, set `featureFlagKey` in `ViewController.swift` to the flag key.
 
-6. Run your application through Xcode.
-7. Update the feature flags from your LaunchDarkly dashboard and the feature flag label in the view controller should update with the current value of the feature flag.
+```swift
+    // AppDelegate.swift
+    private let sdkKey = ""
+
+    // ViewController.swift
+    fileprivate let featureFlagKey = "sample-feature"
+
+```
+
+You should see the message "The <flagKey> feature flag evaluates to <flagValue>.", the application will run continuously and react to the flag changes in LaunchDarkly.
