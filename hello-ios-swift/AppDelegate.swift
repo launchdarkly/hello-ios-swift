@@ -1,11 +1,3 @@
-//
-//  AppDelegate.swift
-//  LaunchDarklyHelloWorld
-//
-//  Created by Korhan Bircan on 3/24/17.
-//  Copyright © 2017 Korhan Bircan. All rights reserved.
-//
-
 import UIKit
 import LaunchDarkly
 
@@ -13,8 +5,8 @@ import LaunchDarkly
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
-    // Enter your mobile key here: Account Settings -> Your Projects -> Production/Test -> Mobile key.
-    private let mobileKey = ""
+    // Set sdkKey to your LaunchDarkly mobile key.
+    private let sdkKey = ""
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         setUpLDClient()
@@ -23,19 +15,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     private func setUpLDClient() {
-        var contextBuilder = LDContextBuilder(key: "test@email.com")
-        contextBuilder.trySetValue("firstName", .string("Bob"))
-        contextBuilder.trySetValue("lastName", .string("Loblaw"))
-        contextBuilder.trySetValue("groups", .array([.string("beta_testers")]))
+        // Set up the evaluation context. This context should appear on your
+        // LaunchDarkly contexts dashboard soon after you run the demo.
+        var contextBuilder = LDContextBuilder(key: "example-user-key")
+        contextBuilder.kind("user")
+        contextBuilder.name("Sandy")
 
         guard case .success(let context) = contextBuilder.build()
         else { return }
 
-        // If you want to disable the Auto EnvironmentAttributes functionality.
-        // Use .disabled as the autoEnvAttributes argument to the constructor
-        var config = LDConfig(mobileKey: mobileKey, autoEnvAttributes: .enabled)
-        config.eventFlushInterval = 30.0
-
-        LDClient.start(config: config, context: context)
+        let config = LDConfig(mobileKey: sdkKey, autoEnvAttributes: .enabled)
+        LDClient.start(config: config, context: context, startWaitSeconds: 30)
     }
 }

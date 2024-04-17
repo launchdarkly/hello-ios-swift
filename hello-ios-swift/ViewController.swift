@@ -1,41 +1,32 @@
-//
-//  ViewController.swift
-//  LaunchDarklyHelloWorld
-//
-//  Created by Korhan Bircan on 3/24/17.
-//  Copyright © 2017 Korhan Bircan. All rights reserved.
-//
-
 import UIKit
 import LaunchDarkly
 
 class ViewController: UIViewController {
     @IBOutlet weak var featureFlagLabel: UILabel!
 
-    // Enter your feature flag name here.
-    fileprivate let featureFlagKey = "hello-ios-boolean"
+    // Set featureFlagKey to the feature flag key you want to evaluate.
+    fileprivate let featureFlagKey = "sample-feature"
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        LDClient.get()?.observe(key: featureFlagKey, owner: self) { [weak self] changedFlag in
-            self?.featureFlagDidUpdate(changedFlag.key)
+        if let ld = LDClient.get() {
+            ld.observe(key: featureFlagKey, owner: self) { [weak self] changedFlag in
+                guard let me = self else { return }
+                guard case .bool(let booleanValue) = changedFlag.newValue else { return }
+
+                me.updateUi(flagKey: changedFlag.key, result: booleanValue)
+            }
+            let result = ld.boolVariation(forKey: featureFlagKey, defaultValue: false)
+            updateUi(flagKey: featureFlagKey, result: result)
         }
-        checkFeatureValue()
     }
 
-    fileprivate func checkFeatureValue() {
-        let featureFlagValue = LDClient.get()!.boolVariation(forKey: featureFlagKey, defaultValue: false)
-        updateLabel(value: featureFlagValue)
-    }
+    func updateUi(flagKey: String, result: Bool) {
+        self.featureFlagLabel.text = "The \(flagKey) feature flag evaluates to \(result)"
 
-    fileprivate func updateLabel(value: Bool) {
-        featureFlagLabel.text = "\(featureFlagKey): \(value)"
-    }
-
-    func featureFlagDidUpdate(_ key: LDFlagKey) {
-        if key == featureFlagKey {
-            checkFeatureValue()
-        }
+        let toggleOn = UIColor(red: 0, green: 0.52, blue: 0.29, alpha: 1)
+        let toggleOff = UIColor(red: 0.22, green: 0.22, blue: 0.25, alpha: 1)
+        self.view.backgroundColor = result ? toggleOn : toggleOff
     }
 }
