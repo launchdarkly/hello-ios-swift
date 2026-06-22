@@ -23,5 +23,8 @@ jobs:
         with:
           xcode-version: 16.4
 
+      - name: Install CocoaPods dependencies
+        run: pod install
+
       - name: Build hello-ios-swift
-        run: xcodebuild build -workspace 'hello-ios-swift.xcworkspace' -scheme 'hello-ios-swift' CODE_SIGNING_ALLOWED=NO | xcpretty
+        run: set -o pipefail && xcodebuild build -workspace 'hello-ios-swift.xcworkspace' -scheme 'hello-ios-swift' CODE_SIGNING_ALLOWED=NO | xcpretty
