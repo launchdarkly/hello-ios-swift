@@ -1,20 +1,17 @@
 version: 2
 updates:
-  - package-ecosystem: "bundler"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'monthly'
     cooldown:
       default-days: 7
-  - package-ecosystem: "cocoapods"
-    directory: "/"
+      exclude:
+        - 'launchdarkly/*'
+
+  - package-ecosystem: 'bundler'
+    directory: '/'
     schedule:
-      interval: "weekly"
-    cooldown:
-      default-days: 7
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+      interval: 'monthly'
     cooldown:
       default-days: 7
