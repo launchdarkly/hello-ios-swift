@@ -1,7 +1,7 @@
 import UIKit
 import LaunchDarkly
 
-@UIApplicationMain
+@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
